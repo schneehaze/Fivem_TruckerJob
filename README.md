@@ -1,5 +1,5 @@
 # Fivem_TruckerJob
-a better version from cody196 @ https://forum.fivem.net/t/release-truckerjob/4736
+Ported version from https://www.gta5-mods.com/scripts/trucking-job-lua to Fivem
 
 ######### THIS IS NOT A FINAL RELEASE #########
 
