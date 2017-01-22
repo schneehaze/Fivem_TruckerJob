@@ -84,15 +84,7 @@ Citizen.CreateThread(function()
             local player = PlayerId()
             local playerEntity = GetPlayerPedScriptIndex(player)
             local coords = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, 0.0, 0.0)
-            GUI.tick()
-            
-             local playerCoords = GetEntityCoords( playerPed, nil )
-                if(IsControlPressed(0, Keys["N"])) then
-						Chat(playerCoords)				
-					end
-            
-            
-             
+            GUI.tick() 
     end
 end)
 function GUI.unload()
