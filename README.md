@@ -10,6 +10,15 @@ Have fun.
 ## v0.21 ##
 - missiontext added
 - make sure you have MissionText activated! https://github.com/schneehaze/fivem_missiontext
+Or add following code on top:
+
+RegisterNetEvent("BASE:missiontext")
+AddEventHandler("BASE:missiontext", function(text, time)
+        ClearPrints()
+        SetTextEntry_2("STRING")
+        AddTextComponentString(text)
+        DrawSubtitleTimed(time, 1)
+end)
 
 ## v0.2 ##
 - refactored code
