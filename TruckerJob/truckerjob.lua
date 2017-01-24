@@ -1,3 +1,6 @@
+-- v0.3
+-- guarantee that trailer and truck is loaded, before spawn
+
 local Keys = {
 	["ESC"] = 322, ["F1"] = 288, ["F2"] = 289, ["F3"] = 170, ["F5"] = 166, ["F6"] = 167, ["F7"] = 168, ["F8"] = 169, ["F9"] = 56, ["F10"] = 57, 
 	["~"] = 243, ["1"] = 157, ["2"] = 158, ["3"] = 160, ["4"] = 164, ["5"] = 165, ["6"] = 159, ["7"] = 161, ["8"] = 162, ["9"] = 163, ["-"] = 84, ["="] = 83, ["BACKSPACE"] = 177, 
@@ -64,6 +67,10 @@ GUI.button          = {}
 GUI.buttonCount     = 0
 
 GUI.time            = 0
+
+--text for mission
+local text1 = false
+local text2 = false
 
 --Blips
 local Blip = {}
@@ -164,15 +171,23 @@ function tick()
         
         MISSION.markerUpdate(IsEntityAttached(MISSION.trailer))
         
+        if( IsEntityAttached(MISSION.trailer) and text1 == false) then
+            TriggerEvent("BASE:missiontext", "Drive to the marked ~g~destination~w~.", 10000)
+            text1 = true
+        elseif( not IsEntityAttached(MISSION.trailer) and text2 == false ) then
+            TriggerEvent("BASE:missiontext", "Attach the ~o~trailer~w~.", 15000)
+            text2 = true
+        end
+        
         local trailerCoords = GetEntityCoords(MISSION.trailer, 0)
         
         if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and  not IsEntityAttached(MISSION.trailer)) then
-            Chat("You gained $"..currentMission[4]) 
+            TriggerEvent("BASE:missiontext", "You gained $"..currentMission[4], 5000)
             MISSION.removeMarker()
             MISSION.getMoney()
             clear()
         elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and IsEntityAttached(MISSION.trailer) ) then
-            Chat("Arrived. Detach your trailer with H")
+            TriggerEvent("BASE:missiontext", "Arrived. Detach your ~o~trailer~w~ with ~r~H~w~", 15000)
             Wait(3000)
         end
         
@@ -200,13 +215,19 @@ function GUI.optionMisson(trailerN)
     MISSION.hashTrailer = GetHashKey(Trailer[trailerN + 1])
     RequestModel(MISSION.hashTrailer)
     
+    while not HasModelLoaded(MISSION.hashTrailer) do
+        Wait(1)
+    end
+    
     --select random truck
     local randomTruck = GetRandomIntInRange(1, #Truck)
     
     MISSION.hashTruck = GetHashKey(Truck[randomTruck])
 	RequestModel(MISSION.hashTruck)
-    Wait(100)
     
+    while not HasModelLoaded(MISSION.hashTruck) do
+        Wait(1)
+    end
 end
 
 function GUI.Mission(missionN)
@@ -278,6 +299,9 @@ function MISSION.getMoney()
     --SetPedMoney(playerPed, pedMoney + gainedMoney)
     --Citizen.Trace("\n\n\n"..GetPedMoney(playerPed))
     --Citizen.Trace("\n You have $"..GetPedMoney(playerPed))
+    --TriggerEvent("es:activateMoney", )
+    --TriggerEvent("es:added")
+    
 end
 ---------------------------------------
 ---------------------------------------
@@ -287,9 +311,8 @@ end
 ---------------------------------------  
 ---------------------------------------
 function GUI.drawStartText()
-    Chat("You want to be a trucker?")
-    Chat("Press N+ to start")
-    GUI.showStartText = true
+    TriggerEvent("BASE:missiontext", "You want to be a trucker? Press ~r~N+~w~ to start.", 500)
+    --GUI.showStartText = true
 end
 
 function GUI.renderMenu(menu)
