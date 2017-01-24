@@ -105,7 +105,8 @@ function clear()
     MISSION.hashTrailer = 0
     currentMission = -1
 end
-    
+
+
 Citizen.CreateThread(function() 
     while true do
         Wait(0)
@@ -116,7 +117,6 @@ Citizen.CreateThread(function()
         --    Chat(playerCoords)
 		--end
         --if(IsControlPressed(1, Keys["M"])) then
-            init()
 			tick()
 		--end 
     end
@@ -124,12 +124,14 @@ Citizen.CreateThread(function()
 end)
 
 function init()
+    Citizen.Trace("intialize TruckerJob...")
     Blip["Company"] = AddBlipForCoord(TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"])
     SetBlipSprite(Blip["Company"], 318)
     SetBlipScale(Blip["Company"], 0.8)
 	SetBlipAsShortRange(Blip["Company"], true)
+   -- GUI.loaded = true
 end
-
+init()
 --Draw Text / Menus
 function tick()
     --use: playerCoods
@@ -172,22 +174,22 @@ function tick()
         MISSION.markerUpdate(IsEntityAttached(MISSION.trailer))
         
         if( IsEntityAttached(MISSION.trailer) and text1 == false) then
-            TriggerEvent("BASE:missiontext", "Drive to the marked ~g~destination~w~.", 10000)
+            TriggerEvent("mt:missiontext", "Drive to the marked ~g~destination~w~.", 10000)
             text1 = true
         elseif( not IsEntityAttached(MISSION.trailer) and text2 == false ) then
-            TriggerEvent("BASE:missiontext", "Attach the ~o~trailer~w~.", 15000)
+            TriggerEvent("mt:missiontext", "Attach the ~o~trailer~w~.", 15000)
             text2 = true
         end
         
         local trailerCoords = GetEntityCoords(MISSION.trailer, 0)
         
         if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and  not IsEntityAttached(MISSION.trailer)) then
-            TriggerEvent("BASE:missiontext", "You gained $"..currentMission[4], 5000)
+            TriggerEvent("mt:missiontext", "You gained $"..currentMission[4], 5000)
             MISSION.removeMarker()
             MISSION.getMoney()
             clear()
         elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and IsEntityAttached(MISSION.trailer) ) then
-            TriggerEvent("BASE:missiontext", "Arrived. Detach your ~o~trailer~w~ with ~r~H~w~", 15000)
+            TriggerEvent("mt:missiontext", "Arrived. Detach your ~o~trailer~w~ with ~r~H~w~", 15000)
             Wait(3000)
         end
         
@@ -311,7 +313,7 @@ end
 ---------------------------------------  
 ---------------------------------------
 function GUI.drawStartText()
-    TriggerEvent("BASE:missiontext", "You want to be a trucker? Press ~r~N+~w~ to start.", 500)
+    TriggerEvent("mt:missiontext", "You want to be a trucker? Press ~r~N+~w~ to start.", 500)
     --GUI.showStartText = true
 end
 
