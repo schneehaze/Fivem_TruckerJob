@@ -7,6 +7,10 @@ If you want to try it out:
 Don't forget to put "-TruckerJob" into your citmp-server.yml unter "AutoStartResources:"
 
 Have fun.
+## v0.22 ##
+- guarantee that trailer and truck is loaded, before spawn
+- small bugfixes
+
 ## v0.21 ##
 - missiontext added
 - make sure you have MissionText activated! https://github.com/schneehaze/fivem_missiontext
