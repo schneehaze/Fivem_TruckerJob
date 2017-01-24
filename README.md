@@ -7,6 +7,9 @@ If you want to try it out:
 Don't forget to put "-TruckerJob" into your citmp-server.yml unter "AutoStartResources:"
 
 Have fun.
+## v0.21 ##
+- missiontext added
+- make sure you have MissionText activated! https://github.com/schneehaze/fivem_missiontext
 
 ## v0.2 ##
 - refactored code
