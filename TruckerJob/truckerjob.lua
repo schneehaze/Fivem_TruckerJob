@@ -1,6 +1,8 @@
 -- v0.3
--- guarantee that trailer and truck is loaded, before spawn
-
+-- misspellings  fixed
+-- Blip fixed
+-- added testingmission
+-- better button selection (slower)
 local Keys = {
 	["ESC"] = 322, ["F1"] = 288, ["F2"] = 289, ["F3"] = 170, ["F5"] = 166, ["F6"] = 167, ["F7"] = 168, ["F8"] = 169, ["F9"] = 56, ["F10"] = 57, 
 	["~"] = 243, ["1"] = 157, ["2"] = 158, ["3"] = 160, ["4"] = 164, ["5"] = 165, ["6"] = 159, ["7"] = 161, ["8"] = 162, ["9"] = 163, ["-"] = 84, ["="] = 83, ["BACKSPACE"] = 177, 
@@ -33,7 +35,8 @@ local MissionData = {
     [1] = {2574.5144, 328.5554, 108.45, 10000},
     [2] = {-2565.0894, 2345.8904, 33.06, 15000},
     [3] = {1706.7966, 4943.9897, 42.16, 20000},
-    [4] = {196.5617, 6631.0967, 31.53, 30000}
+    [4] = {196.5617, 6631.0967, 31.53, 30000},
+    [5] = {68.42, 96.07, 79.00, 1337}
 }
 local MISSION = {}
 MISSION.start = false
@@ -73,7 +76,8 @@ local text1 = false
 local text2 = false
 
 --Blips
-local Blip = {}
+--init()
+local blip = {}
 
 --focus button color
 local r = 0
@@ -95,8 +99,7 @@ function clear()
          SetVehicleDoorsLocked(MISSION.truck, 2)
          SetVehicleUndriveable(MISSION.truck, true)
     end
-    
-    MISSION.start = false
+
     MISSION.trailer = false
     MISSION.truck = false
     MISSION.trailerBlip = false
@@ -106,40 +109,32 @@ function clear()
     currentMission = -1
 end
 
-
+local initload = false
 Citizen.CreateThread(function() 
     while true do
-        Wait(0)
-        playerPed = GetPlayerPed(-1)
-        playerCoords = GetEntityCoords(playerPed, 0)
-        
-        --if(IsControlPressed(1, Keys["N"])) then
-        --    Chat(playerCoords)
-		--end
-        --if(IsControlPressed(1, Keys["M"])) then
-			tick()
-		--end 
+       Wait(0)
+       playerPed = GetPlayerPed(-1)
+       playerCoords = GetEntityCoords(playerPed, 0)
+       init()
+       tick()
     end
     
 end)
 
 function init()
-    Citizen.Trace("intialize TruckerJob...")
-    Blip["Company"] = AddBlipForCoord(TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"])
-    SetBlipSprite(Blip["Company"], 318)
-    SetBlipScale(Blip["Company"], 0.8)
-	SetBlipAsShortRange(Blip["Company"], true)
+    blip["Company"] = AddBlipForCoord(TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"])
+    SetBlipSprite( blip["Company"], 67)
+    SetBlipDisplay( blip["Company"], 4)
+    SetBlipScale( blip["Company"], 0.8)
+    initload = true
    -- GUI.loaded = true
 end
-init()
+
 --Draw Text / Menus
 function tick()
-    --use: playerCoods
-    --
-    --
     --Show menu, when player is near
     if( MISSION.start == false) then
-        if( GetDistanceBetweenCoords( playerCoords, TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"] ) < 10) then
+    if( GetDistanceBetweenCoords( playerCoords, TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"] ) < 10) then
             if(GUI.showStartText == false) then
                 GUI.drawStartText()
             end
@@ -156,16 +151,17 @@ function tick()
         end --if GetDistanceBetweenCoords ...
 
         --menu
-        if( GUI.loaded == false) then
-            GUI.init() 
+        if( GUI.loaded == false ) then
+            GUI.init()
         end
 
         if( GUI.showMenu == true and GUI.menu ~= -1) then
             if( GUI.time == 0) then
                 GUI.time = GetGameTimer()
             end
-            if( (GetGameTimer() - GUI.time) > 100) then
+            if( (GetGameTimer() - GUI.time) > 10) then
                 GUI.updateSelectionMenu(GUI.menu)
+                GUI.time = 0
             end
             GUI.renderMenu(GUI.menu)
         end --if GUI.loaded == false
@@ -183,12 +179,12 @@ function tick()
         
         local trailerCoords = GetEntityCoords(MISSION.trailer, 0)
         
-        if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and  not IsEntityAttached(MISSION.trailer)) then
+        if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 50 and  not IsEntityAttached(MISSION.trailer)) then
             TriggerEvent("mt:missiontext", "You gained $"..currentMission[4], 5000)
             MISSION.removeMarker()
             MISSION.getMoney()
             clear()
-        elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and IsEntityAttached(MISSION.trailer) ) then
+        elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 50 and IsEntityAttached(MISSION.trailer) ) then
             TriggerEvent("mt:missiontext", "Arrived. Detach your ~o~trailer~w~ with ~r~H~w~", 15000)
             Wait(3000)
         end
@@ -197,8 +193,6 @@ function tick()
             MISSION.removeMarker()
             clear()
         end
-        
-        Wait(1000)
     end --if MISSION.start == false
 end
 
@@ -232,7 +226,7 @@ function GUI.optionMisson(trailerN)
     end
 end
 
-function GUI.Mission(missionN)
+function GUI.mission(missionN)
     currentMission = MissionData[missionN]
     GUI.showMenu = false
         
@@ -249,6 +243,7 @@ function MISSION.spawnTruck()
     SetVehicleNumberPlateText(MISSION.truck, "M15510")
     SetVehRadioStation(MISSION.truck, "OFF")
 	SetPedIntoVehicle(playerPed, MISSION.truck, -1)
+    SetVehicleEngineOn(MISSION.truck, true, false, false)
     
     --important
     SetEntityAsMissionEntity(MISSION.truck, true, true);
@@ -295,15 +290,14 @@ function MISSION.removeMarker()
     SetBlipAlpha(MISSION.trailerBlip, 0)
 end
 
+function MISSION.getPlayer(result)
+    Citizen.Trace("\nGetPlayer()")
+    Citizen.Trace(result)
+end
+
 function MISSION.getMoney()
-    --local pedMoney = GetPedMoney(playerPed)
-    --local gainedMoney = currentMission[4]
-    --SetPedMoney(playerPed, pedMoney + gainedMoney)
-    --Citizen.Trace("\n\n\n"..GetPedMoney(playerPed))
-    --Citizen.Trace("\n You have $"..GetPedMoney(playerPed))
-    --TriggerEvent("es:activateMoney", )
-    --TriggerEvent("es:added")
-    
+   TriggerEvent("es:addedMoney", currentMission[4])
+    TriggerEvent("truckerJob:getMoney", currentMission[4])
 end
 ---------------------------------------
 ---------------------------------------
@@ -338,12 +332,13 @@ function GUI.init()
     
     GUI.buttonCount = 0
     
-    GUI.addButton(1, "Mission 1 [ 5.000$ ]", GUI.Mission, 0.35, 0.25, 0.3, 0.05)
-    GUI.addButton(1, "Mission 2 [ 10.000$ ]", GUI.Mission, 0.35, 0.30, 0.3, 0.05)
-    GUI.addButton(1, "Mission 3 [ 15.000$ ]", GUI.Mission, 0.35, 0.35, 0.3, 0.05)
-    GUI.addButton(1, "Mission 4 [ 20.000$ ]", GUI.Mission, 0.35, 0.40, 0.3, 0.05)
-    GUI.addButton(1, "Mission 5 [ 30.000$ ]", GUI.Mission, 0.35, 0.45, 0.3, 0.05)
-    GUI.addButton(1, "Exit Menu", GUI.Exit, 0.35, 0.50, 0.3, 0.05)
+    GUI.addButton(1, "Mission 1 [ 5.000$ ]", GUI.mission, 0.35, 0.25, 0.3, 0.05)
+    GUI.addButton(1, "Mission 2 [ 10.000$ ]", GUI.mission, 0.35, 0.30, 0.3, 0.05)
+    GUI.addButton(1, "Mission 3 [ 15.000$ ]", GUI.mission, 0.35, 0.35, 0.3, 0.05)
+    GUI.addButton(1, "Mission 4 [ 20.000$ ]", GUI.mission, 0.35, 0.40, 0.3, 0.05)
+    GUI.addButton(1, "Mission 5 [ 30.000$ ]", GUI.mission, 0.35, 0.45, 0.3, 0.05)
+    GUI.addButton(1, "For Testing! [ 1.337$ ]", GUI.mission, 0.35, 0.50, 0.3, 0.05)
+    GUI.addButton(1, "Exit Menu", GUI.exit, 0.35, 0.55, 0.3, 0.05)
 end
 
 --Render stuff
@@ -382,7 +377,7 @@ function GUI.renderDesc()
 		SetTextDropShadow(0, 0, 0, 0, 0)
 		SetTextEdge(0, 0, 0, 0, 0)
 		SetTextEntry("STRING")
-		AddTextComponentString(settings["name"] .. "\n" .."\n" .."Num8 for UP" .. "\n" .. "Num2 for DOWN" .. "\n" .. "Num5 to Select".. "\n" .."Hold H to Detach" .. "\n" .. "Trainer")
+		AddTextComponentString(settings["name"] .. "\n" .."\n" .."Navigate with" .. "\n" .. "arrows." .. "\n" .. "ENTER to Select".. "\n" .."Hold H to Detach" .. "\n" .. "Trailer")
 		DrawText((settings["xpos"] - 0.06), (settings["ypos"] - 0.13))
 		AddTextComponentString(settings["name"])
 		GUI.renderBox(
@@ -457,12 +452,11 @@ function GUI.addButton(menu, name, func, xpos, ypos, xscale, yscale)
     GUI.buttonCount = GUI.buttonCount + 1
 end
 
-function GUI.Null()
+function GUI.null()
 end
 
-function GUI.Exit()
-    GUI.hiddenMenu1 = true
-	GUI.hiddenMenu2 = true
+function GUI.exit()
+    GUI.showMenu = false
 	print("Exit menu")
 end
 
@@ -489,6 +483,7 @@ function GUI.updateSelectionMenu(menu)
             if( not GUI.menu ) then
                 GUI.menu = -1
             end
+            Wait(100)
             
             --GUI.button[menu][GUI.selected[menu]]["func"](GUI.selected[menu])
         else
