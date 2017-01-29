@@ -7,6 +7,14 @@ If you want to try it out:
 Don't forget to put "-TruckerJob" into your citmp-server.yml unter "AutoStartResources:"
 
 Have fun.
+## v0.3 ##
+- bugfixes
+- corrections
+- navigation approvement
+- truck disappears after finishing the job
+- blips fixed
+- visual money (not implemented yet)
+
 ## v0.22 ##
 - guarantee that trailer and truck is loaded, before spawn
 - small bugfixes
