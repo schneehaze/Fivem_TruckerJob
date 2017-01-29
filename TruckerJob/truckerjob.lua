@@ -42,8 +42,6 @@ local MISSION = {}
 MISSION.start = false
 MISSION.tailer = false
 MISSION.truck = false
-MISSION.trailerBlip = false
-MISSION.currentDestinationBlip = false
 
 MISSION.hashTruck = 0
 MISSION.hashTrailer = 0
@@ -75,9 +73,16 @@ GUI.time            = 0
 local text1 = false
 local text2 = false
 
---Blips
---init()
-local blip = {}
+--blips
+local BLIP = {}
+
+BLIP.company = 0
+
+BLIP.trailer = {}
+BLIP.trailer.i = 0
+
+BLIP.destination = {}
+BLIP.destination.i = 0
 
 --focus button color
 local r = 0
@@ -85,11 +90,10 @@ local g= 128
 local b = 192
 local alpha = 200
 
-function clear()
+function clear()    
     MISSION.start = false
-    SetBlipAlpha(MISSION.trailerBlip, 0)
-    SetBlipAlpha(MISSION.currentDestinationBlip, 0)
-    SetBlipRoute(MISSION.currentDestinationBlip, false) 
+    SetBlipRoute(BLIP.destination[BLIP.destination.i], false) 
+    SetEntityAsNoLongerNeeded(BLIP.destination[BLIP.destination.i])
     
     if ( DoesEntityExist(MISSION.trailer) ) then
          SetEntityAsNoLongerNeeded(MISSION.trailer)
@@ -99,11 +103,11 @@ function clear()
          SetVehicleDoorsLocked(MISSION.truck, 2)
          SetVehicleUndriveable(MISSION.truck, true)
     end
+    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(MISSION.trailer))
+    Citizen.InvokeNative(0xEA386986E786A54F, Citizen.PointerValueIntInitialized(MISSION.truck))
 
-    MISSION.trailer = false
-    MISSION.truck = false
-    MISSION.trailerBlip = false
-    MISSION.currentDestinationBlip = false
+    MISSION.trailer = 0
+    MISSION.truck = 0
     MISSION.hashTruck = 0
     MISSION.hashTrailer = 0
     currentMission = -1
@@ -115,23 +119,38 @@ Citizen.CreateThread(function()
        Wait(0)
        playerPed = GetPlayerPed(-1)
        playerCoords = GetEntityCoords(playerPed, 0)
-       init()
-       tick()
+        if not initload then
+            init()
+        end
+        tick()
     end
     
 end)
 
+local initload = false
 function init()
-    blip["Company"] = AddBlipForCoord(TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"])
-    SetBlipSprite( blip["Company"], 67)
-    SetBlipDisplay( blip["Company"], 4)
-    SetBlipScale( blip["Company"], 0.8)
+    BLIP.company = AddBlipForCoord(TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"])
+    SetBlipSprite(BLIP.company, 67)
+    SetBlipDisplay(BLIP.company, 4)
+    SetBlipScale(BLIP.company, 0.8)
     initload = true
    -- GUI.loaded = true
 end
 
 --Draw Text / Menus
 function tick()
+    
+    --debugging stange things
+    if ( type(BLIP.trailer[BLIP.trailer.i]) == "boolean" ) then
+        --Citizen.Trace("-FAIL!-")
+    elseif( BLIP.trailer[BLIP.trailer.i] == nil ) then
+        --Citizen.Trace("-nil-")
+    else
+       BLIP.trailer[BLIP.trailer.i] = BLIP.trailer[BLIP.trailer.i]
+       BLIP.destination[BLIP.destination.i] = BLIP.destination[BLIP.destination.i]
+    end
+    
+    
     --Show menu, when player is near
     if( MISSION.start == false) then
     if( GetDistanceBetweenCoords( playerCoords, TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"] ) < 10) then
@@ -140,6 +159,7 @@ function tick()
             end
                 --key controlling
                 if(IsControlPressed(1, Keys["N+"]) and GUI.showMenu == false) then
+                    --clear()
                     GUI.showMenu = true
                     GUI.menu = 0
                 end
@@ -168,7 +188,6 @@ function tick()
     elseif( MISSION.start == true ) then
         
         MISSION.markerUpdate(IsEntityAttached(MISSION.trailer))
-        
         if( IsEntityAttached(MISSION.trailer) and text1 == false) then
             TriggerEvent("mt:missiontext", "Drive to the marked ~g~destination~w~.", 10000)
             text1 = true
@@ -176,17 +195,15 @@ function tick()
             TriggerEvent("mt:missiontext", "Attach the ~o~trailer~w~.", 15000)
             text2 = true
         end
-        
+        Wait(2000)
         local trailerCoords = GetEntityCoords(MISSION.trailer, 0)
-        
-        if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 50 and  not IsEntityAttached(MISSION.trailer)) then
+        if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and  not IsEntityAttached(MISSION.trailer)) then
             TriggerEvent("mt:missiontext", "You gained $"..currentMission[4], 5000)
             MISSION.removeMarker()
             MISSION.getMoney()
             clear()
-        elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 50 and IsEntityAttached(MISSION.trailer) ) then
+        elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and IsEntityAttached(MISSION.trailer) ) then
             TriggerEvent("mt:missiontext", "Arrived. Detach your ~o~trailer~w~ with ~r~H~w~", 15000)
-            Wait(3000)
         end
         
         if ( IsEntityDead(MISSION.trailer) or IsEntityDead(MISSION.truck) ) then
@@ -227,9 +244,11 @@ function GUI.optionMisson(trailerN)
 end
 
 function GUI.mission(missionN)
+    --currently one destination per ride
+    BLIP.trailer.i = BLIP.trailer.i + 1
+    BLIP.destination.i = BLIP.destination.i + 1
     currentMission = MissionData[missionN]
     GUI.showMenu = false
-        
     --mission start
     MISSION.start = true
     MISSION.spawnTrailer()
@@ -246,13 +265,12 @@ function MISSION.spawnTruck()
     SetVehicleEngineOn(MISSION.truck, true, false, false)
     
     --important
-    SetEntityAsMissionEntity(MISSION.truck, true, true);
+    --SetEntityAsMissionEntity(MISSION.truck, true, true);
 end
 
 function MISSION.spawnTrailer()
     MISSION.trailer = CreateVehicle(MISSION.hashTrailer, TruckingTrailer[0]["x"], TruckingTrailer[0]["y"], TruckingTrailer[0]["z"], 0.0, true, false)
     SetVehicleOnGroundProperly(MISSION.trailer)
-    SetEntityAsMissionEntity(MISSION.trailer, -1)
     
     --setMarker on trailer
     MISSION.trailerMarker()
@@ -261,38 +279,36 @@ end
 local oneTime = false
 
 function MISSION.trailerMarker()
-    MISSION.trailerBlip = AddBlipForEntity(MISSION.trailer)
-        SetBlipSprite(MISSION.trailerBlip, 1)
-        SetBlipColour(MISSION.trailerBlip, 17)
-        SetBlipRoute(MISSION.trailerBlip, false)
+    --BLIP.trailer.i = BLIP.trailer.i + 1 this happens in GUI.mission()
+    Chat("Blip creating... or not:"..BLIP.trailer.i) 
+    BLIP.trailer[BLIP.trailer.i] = AddBlipForEntity(MISSION.trailer)
+    SetBlipSprite(BLIP.trailer[BLIP.trailer.i], 1)
+    SetBlipColour(BLIP.trailer[BLIP.trailer.i], 17)
+    SetBlipRoute(BLIP.trailer[BLIP.trailer.i], false)
+    Wait(50)
 end
 
 function MISSION.markerUpdate(trailerAttached)
+    if( not BLIP.destination[BLIP.destination.i] and trailerAttached) then
+       -- BLIP.destination.i = BLIP.destination.i + 1 this happens in GUI.mission()
+        BLIP.destination[BLIP.destination.i]  = AddBlipForCoord(currentMission[1], currentMission[2], currentMission[3])
+        SetBlipSprite(BLIP.destination[BLIP.destination.i], 1)
+        SetBlipColour(BLIP.destination[BLIP.destination.i], 2)
+        SetBlipRoute(BLIP.destination[BLIP.destination.i], true)
+        Chat(BLIP.destination[BLIP.destination.i])
+    end
     if( trailerAttached ) then
-        --doesn't work for a reason..
-        --RemoveBlip(MISSION.trailerBlip)
-        SetBlipAlpha(MISSION.trailerBlip, 0)
-        
-    elseif ( not trailerAttached and MISSION.trailerBlip) then
-        SetBlipAlpha(MISSION.trailerBlip, 1000)
+        SetBlipSprite(BLIP.trailer[BLIP.trailer.i], 2) --invisible
+    elseif ( not trailerAttached and BLIP.trailer[BLIP.trailer.i]) then
+        SetBlipSprite(BLIP.trailer[BLIP.trailer.i], 1) --visible
+        SetBlipColour(BLIP.trailer[BLIP.trailer.i], 17)
     end
-    
-    if( MISSION.currentDestinationBlip == false and trailerAttached ) then
-        MISSION.currentDestinationBlip = AddBlipForCoord(currentMission[1], currentMission[2], currentMission[3])
-        SetBlipSprite(MISSION.currentDestinationBlip, 1)
-        SetBlipColour(MISSION.currentDestinationBlip, 2)
-        SetBlipRoute(MISSION.currentDestinationBlip, true) 
-    end
+    Wait(50)
 end
 
 function MISSION.removeMarker()
-    SetBlipAlpha(MISSION.currentDestinationBlip, 0) 
-    SetBlipAlpha(MISSION.trailerBlip, 0)
-end
-
-function MISSION.getPlayer(result)
-    Citizen.Trace("\nGetPlayer()")
-    Citizen.Trace(result)
+    SetBlipSprite(BLIP.destination[BLIP.destination.i], 2)--invisible
+    SetBlipSprite(BLIP.trailer[BLIP.trailer.i], 2) --invisible
 end
 
 function MISSION.getMoney()
@@ -476,7 +492,6 @@ function GUI.updateSelectionMenu(menu)
             
             --call mission functions
             GUI.button[menu][GUI.selected[menu]]["func"](GUI.selected[menu])
-            
             
             GUI.menu = 1
             GUI.selected[menu] = 0
