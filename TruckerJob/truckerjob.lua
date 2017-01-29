@@ -119,21 +119,21 @@ Citizen.CreateThread(function()
        Wait(0)
        playerPed = GetPlayerPed(-1)
        playerCoords = GetEntityCoords(playerPed, 0)
-        if not initload then
+        if (not initload) then
             init()
+            initload = true
         end
         tick()
     end
     
 end)
 
-local initload = false
 function init()
     BLIP.company = AddBlipForCoord(TruckingCompany[0]["x"], TruckingCompany[0]["y"], TruckingCompany[0]["z"])
     SetBlipSprite(BLIP.company, 67)
     SetBlipDisplay(BLIP.company, 4)
     SetBlipScale(BLIP.company, 0.8)
-    initload = true
+    Citizen.Trace("Truck Blip added.")
    -- GUI.loaded = true
 end
 
