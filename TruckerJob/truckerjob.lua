@@ -280,7 +280,6 @@ local oneTime = false
 
 function MISSION.trailerMarker()
     --BLIP.trailer.i = BLIP.trailer.i + 1 this happens in GUI.mission()
-    Chat("Blip creating... or not:"..BLIP.trailer.i) 
     BLIP.trailer[BLIP.trailer.i] = AddBlipForEntity(MISSION.trailer)
     SetBlipSprite(BLIP.trailer[BLIP.trailer.i], 1)
     SetBlipColour(BLIP.trailer[BLIP.trailer.i], 17)
@@ -295,7 +294,6 @@ function MISSION.markerUpdate(trailerAttached)
         SetBlipSprite(BLIP.destination[BLIP.destination.i], 1)
         SetBlipColour(BLIP.destination[BLIP.destination.i], 2)
         SetBlipRoute(BLIP.destination[BLIP.destination.i], true)
-        Chat(BLIP.destination[BLIP.destination.i])
     end
     if( trailerAttached ) then
         SetBlipSprite(BLIP.trailer[BLIP.trailer.i], 2) --invisible
