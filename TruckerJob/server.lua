@@ -1,1 +1,6 @@
---comming soon
+RegisterServerEvent('truckerJob:addMoney')
+AddEventHandler('truckerJob:addMoney', function(amount)
+  TriggerEvent('es:getPlayerFromId', source, function(user)
+    user:addMoney((amount))
+     end)
+end)
