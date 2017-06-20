@@ -200,7 +200,7 @@ function tick()
         if ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and  not IsEntityAttached(MISSION.trailer)) then
             TriggerEvent("mt:missiontext", "You gained $"..currentMission[4], 5000)
             MISSION.removeMarker()
-            MISSION.getMoney()
+            TriggerServerEvent('truckerJob:success', currentMission[4])
             clear()
         elseif ( GetDistanceBetweenCoords(currentMission[1], currentMission[2], currentMission[3], trailerCoords ) < 25 and IsEntityAttached(MISSION.trailer) ) then
             TriggerEvent("mt:missiontext", "Arrived. Detach your ~o~trailer~w~ with ~r~H~w~", 15000)
