@@ -1,7 +1,7 @@
 # Fivem_TruckerJob
-Ported version from https://www.gta5-mods.com/scripts/trucking-job-lua to FiveReborn https://forum.fivem.net/t/release-truckerjob/4736/21
+Ported version from https://www.gta5-mods.com/scripts/trucking-job-lua to FiveM https://forum.fivem.net/t/release-truckerjob/4736/21
 
-### THIS IS NOT A FINAL RELEASE 
+#### THIS IS NOT A FINAL RELEASE 
 
 If you want to try it out: 
 Don't forget to put `-TruckerJob` into your citmp-server.yml under "AutoStartResources:"
